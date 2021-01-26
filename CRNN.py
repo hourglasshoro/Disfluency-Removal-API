@@ -1,8 +1,8 @@
 import tensorflow as tf
 import pickle as pkl
-import tensorflow.contrib.eager as tfe
-import tensorflow.contrib.cudnn_rnn as cudnn_rnn
-from tensorflow.contrib.layers import batch_norm
+# import tensorflow.contrib.eager as tfe
+# import tensorflow.contrib.cudnn_rnn as cudnn_rnn
+# from tensorflow.contrib.layers import batch_norm
 import gc
 import time
 import numpy as np
@@ -21,32 +21,32 @@ class Model(tf.keras.Model):
         #conv_maxpool
         self._input_shape=[-1,input_dim,201,1]
 
-        self.conv1=tf.layers.Conv2D(filters=32,kernel_size=8, padding='same')
-        self.freq_maxpool1=tf.layers.MaxPooling2D((5,1),(5,1),
+        self.conv1=tf.keras.layers.Conv2D(filters=32,kernel_size=8, padding='same')
+        self.freq_maxpool1=tf.keras.layers.MaxPooling2D((5,1),(5,1),
                                                    padding='valid')  
 
-        self.conv2=tf.layers.Conv2D(filters=64,kernel_size=4, padding='same')
-        self.freq_maxpool2 = tf.layers.MaxPooling2D((4, 1), (4, 1),
+        self.conv2=tf.keras.layers.Conv2D(filters=64,kernel_size=4, padding='same')
+        self.freq_maxpool2 = tf.keras.layers.MaxPooling2D((4, 1), (4, 1),
                                                      padding='valid')  
 
-        self.conv3=tf.layers.Conv2D(filters=64,kernel_size=4, padding='same')
-        self.freq_maxpool3 = tf.layers.MaxPooling2D((2, 1), (2, 1),
+        self.conv3=tf.keras.layers.Conv2D(filters=64,kernel_size=4, padding='same')
+        self.freq_maxpool3 = tf.keras.layers.MaxPooling2D((2, 1), (2, 1),
                                                      padding='valid')  
 
 
-        self.freq_avgpool1 = tf.layers.AveragePooling2D((8, 1), (4, 1),
+        self.freq_avgpool1 = tf.keras.layers.AveragePooling2D((8, 1), (4, 1),
                                                         padding='valid')  
-        self.freq_avgpool2 = tf.layers.AveragePooling2D((8, 1), (8, 1),
+        self.freq_avgpool2 = tf.keras.layers.AveragePooling2D((8, 1), (8, 1),
                                                         padding='valid')  
 
         #gru units
-        self.grucells=self._add_cells([tf.contrib.rnn.GRUCell(num_units=hidden_dim) for _ in range(num_layers)])   #TODO: use dropoutwrapper
+        self.grucells=self._add_cells([tf.keras.layers.GRUCell(hidden_dim) for _ in range(num_layers)])   #TODO: use dropoutwrapper
 
-        self.rnn=tf.contrib.rnn.MultiRNNCell(self.grucells)
+        self.rnn=tf.keras.layers.StackedRNNCells(self.grucells)
 
         #feedforward
-        self.fc1 = tf.layers.Dense(100, activation=tf.nn.relu)
-        self.fcf = tf.layers.Dense(2)
+        self.fc1 = tf.keras.layers.Dense(100, activation=tf.nn.relu)
+        self.fcf = tf.keras.layers.Dense(2)
 
     def __call__(self, inputs,training):
         """
@@ -79,7 +79,7 @@ class Model(tf.keras.Model):
 
         # Feed to GRU input:[batch,sequence,timesteps] expected_input to GRU cells: [batch,sequence]*timesteps
         y=tf.unstack(y,axis=2)    # -> returns list of [batch_size,sequence] of size timesteps
-        rnn_outs,final_state=tf.nn.static_rnn(self.rnn,y,dtype=tf.float32)   #-> rnn_outs: timestep list of outputs  final_state:
+        rnn_outs,final_state=tf.compat.v1.nn.static_rnn(self.rnn,y,dtype=tf.float32)   #-> rnn_outs: timestep list of outputs  final_state:
         y=tf.stack(rnn_outs,axis=1)   # ->  [batch,timesteps,hidden_dim]
 
         y=self.fc1(y)                 # ->  [batch,timesteps, 100]

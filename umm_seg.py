@@ -5,7 +5,7 @@ import json
 import pickle as pkl
 
 import tensorflow as tf
-import tensorflow.contrib.eager as tfe
+# import tensorflow.contrib.eager as tfe
 
 import librosa
 import pydub
@@ -17,10 +17,10 @@ import utils
 
 
 #Tensorflow initialization
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1.0)
-config = tf.ConfigProto(gpu_options=gpu_options,intra_op_parallelism_threads=1)
-config.gpu_options.allow_growth = True
-tf.enable_eager_execution(config=config,device_policy=tfe.DEVICE_PLACEMENT_SILENT)
+# gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1.0)
+# config = tf.ConfigProto(gpu_options=gpu_options,intra_op_parallelism_threads=1)
+# config.gpu_options.allow_growth = True
+# tf.enable_eager_execution(config=config,device_policy=tfe.DEVICE_PLACEMENT_SILENT)
 
 #current model name ckpt128logmel_2conv-74
 
@@ -50,9 +50,9 @@ def feat_ext(file_path,file_name):
 
 
 def normalization(tensor_in, epsilon=.0001):
-    tensor_in=tf.reshape(tensor_in,[-1,utils.input_dim,utils.time_steps])
-    mean,variance = tf.nn.moments(tensor_in,axes=[1],keep_dims=1)
-    tensor_normalized = (tensor_in-mean)/(variance+tf.cast(epsilon,tf.float64))
+    tensor_in=tf.cast(tf.reshape(tensor_in,[-1,utils.input_dim,utils.time_steps]),tf.float64)
+    mean,variance = tf.nn.moments(tensor_in,axes=[1],keepdims=True)
+    tensor_normalized = (tensor_in-mean)/(variance+tf.cast(epsilon,tf.float64)),
 
     return tensor_normalized
 
@@ -125,12 +125,16 @@ def call_umm_segmentation(features,pad,contiguous,random_wins):
     # load checkpoint
     checkpoint_prefix = os.path.join(utils.model_dir, utils.model_name)
 
-    step_counter = tf.train.get_or_create_global_step()
-    checkpoint = tfe.Checkpoint(
-        model=model, step_counter=step_counter)
+    step_counter = tf.compat.v1.train.get_or_create_global_step()
 
-    if tf.train.checkpoint_exists(checkpoint_prefix):
-        checkpoint.restore(checkpoint_prefix)
+
+    # checkpoint = tfe.Checkpoint(
+    #     model=model, step_counter=step_counter)
+
+    # if tf.train.checkpoint_exists(checkpoint_prefix):
+    #     checkpoint.restore(checkpoint_prefix)
+
+
     norm_feats=normalization(tf.convert_to_tensor(features))
     logit = model(norm_feats, training=False)
     time_segments = compute_timeline(logit,pad,contiguous,random_wins)
@@ -152,11 +156,12 @@ def segment_feat(features):
     """
     #pad with zeros to make divisable by 201
     cols=features.shape[1]
-    multiplier=(cols/utils.time_steps)+((cols%utils.time_steps) > 0)
+    multiplier=int(cols/utils.time_steps)+((cols%utils.time_steps) > 0)
     pad=utils.time_steps*multiplier - cols
-    padded_feats=np.pad(features,((0,0),(0,pad)),'constant',constant_values=0)
+    padded_feats=np.pad(features,((0,0),(0,int(pad))),'constant',constant_values=0)
 
     #create segments
+    # print("padded_feats_shape:{0}, multiplier:{1}".format(padded_feats.shape,multiplier))
     seg_features=np.hsplit(padded_feats,multiplier)
     contiguous= len(seg_features)
     split_size=utils.time_steps
@@ -195,9 +200,9 @@ def silence_intervals(file_path,file_name):
 
 
     dur=librosa.get_duration(y=audio, sr=sample_rate)
-    print nsil_intv
-    print dur
-    print sample_rate
+    print (nsil_intv)
+    print (dur)
+    print (sample_rate)
     curr_sil_start=0.0
     curr_sil_end=0.0
     for i in range(nsil_intv.shape[0]):
@@ -213,6 +218,6 @@ def silence_intervals(file_path,file_name):
         sil_end_time.append(str(curr_sil_end))
         curr_sil_start=nsil_end_time[i]
 
-    print sil_start_time
-    print sil_end_time
+    print (sil_start_time)
+    print (sil_end_time)
     return sil_start_time,sil_end_time

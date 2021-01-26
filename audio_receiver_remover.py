@@ -63,7 +63,7 @@ class get_sample_file:
 			wf=open(dir_+'storage/'+file_name,'wb')
 			wf.write(wav_bytes)
 			wf.close()
-			print "audio received ..."
+			print ("audio received ...")
 
 			# make single channel [uncomment if passing dual channel audio]
 			#silence_classf.make_one_channel(dir_+'storage',file_name)
@@ -74,6 +74,7 @@ class get_sample_file:
 
 			# call umm segmentation
 			feats,X,sample_rate=umm_seg.feat_ext(dir_+'storage',file_name)
+			# print("feats:{0}, X:{1}, sample_rate:{2}".format(feats,X,sample_rate))
 			seg_feats,pad,contiguous,rand_wins=umm_seg.segment_feat(feats)
 			seg_feats=np.array(seg_feats)
 			time_segments=umm_seg.call_umm_segmentation(seg_feats,pad,contiguous,rand_wins)
@@ -100,30 +101,33 @@ class get_sample_file:
 					elif float(sil_start_time[idx2])-end_time[idx1] < 0.3 and float(sil_start_time[idx2])-end_time[idx1]>= 0:	
 						sil_start_time[idx2]=str(end_time[idx1])
 			#print disf_sil_start_time
-			
-			print "Going to classify silences.."
+
+
+			# TODO: model xgboost version confrict
+
+			# print ("Going to classify silences..")
 			##call silence classfication for visualization
-			disf_sil_start_time, disf_sil_end_time =silence_classf.classify_intervals(dir_+'storage',file_name, sil_start_time, sil_end_time)
+			# disf_sil_start_time, disf_sil_end_time =silence_classf.classify_intervals(dir_+'storage',file_name, sil_start_time, sil_end_time)
 			
-			print "Done silence classification.. going into silencing fillers"
+			# print ("Done silence classification.. going into silencing fillers")
 			#deleting fillers
-			silence_classf.silence_fillers(dir_+'storage',file_name,start_time,end_time,sil_start_time,sil_end_time)
+			# silence_classf.silence_fillers(dir_+'storage',file_name,start_time,end_time,sil_start_time,sil_end_time)
 
-			print "Going to reduce silences.."
+			# print ("Going to reduce silences..")
 			#reduce silences
-			sil_start_time,sil_end_time,disf_sil_start_time, disf_sil_end_time=silence_classf.reduce_silences(dir_+'storage',file_name)
+			# sil_start_time,sil_end_time,disf_sil_start_time, disf_sil_end_time=silence_classf.reduce_silences(dir_+'storage',file_name)
 
-			print "Final post-processing (increasing volume etc.)"
+			# print ("Final post-processing (increasing volume etc.)")
 			#enhance
-			silence_classf.enhancement(dir_+'storage',file_name)
+			# silence_classf.enhancement(dir_+'storage',file_name)
 
 			
 			return json.dumps({'msg':"Your file is uploaded!",
 			'start_time':start_time,'end_time':end_time, 
 			'sil_start_time':sil_start_time, 
 			'sil_end_time':sil_end_time,
-			'disf_sil_start_time':disf_sil_start_time, 
-			'disf_sil_end_time':disf_sil_end_time,
+			# 'disf_sil_start_time':disf_sil_start_time,
+			# 'disf_sil_end_time':disf_sil_end_time,
 			})
 
 	def OPTIONS(self):
@@ -214,7 +218,7 @@ class get_audio_file:
 			wf=open(dir_+'storage/'+file_name,'wb')
 			wf.write(data.file)
 			wf.close()
-			print "audio received ..."
+			print ("audio received ...")
 
 			# make single channel [uncomment if passing dual channel audio]
 			#silence_classf.make_one_channel(dir_+'storage',file_name)
@@ -250,19 +254,19 @@ class get_audio_file:
 						sil_start_time[idx2]=str(end_time[idx1])
 			#print disf_sil_start_time
 			
-			print "Going to classify silences.."
+			print ("Going to classify silences..")
 			##call silence classfication for visualization
 			disf_sil_start_time, disf_sil_end_time =silence_classf.classify_intervals(dir_+'storage',file_name, sil_start_time, sil_end_time)
 			
-			print "Done silence classification.. going into silencing fillers"
+			print ("Done silence classification.. going into silencing fillers")
 			#deleting fillers
 			silence_classf.silence_fillers(dir_+'storage',file_name,start_time,end_time,sil_start_time,sil_end_time)
 
-			print "Going to reduce silences.."
+			print ("Going to reduce silences..")
 			#reduce silences
 			sil_start_time,sil_end_time,disf_sil_start_time, disf_sil_end_time=silence_classf.reduce_silences(dir_+'storage',file_name)
 
-			print "Final post-processing (increasing volume etc.)"
+			print ("Final post-processing (increasing volume etc.)")
 			#enhance
 			silence_classf.enhancement(dir_+'storage',file_name)
 

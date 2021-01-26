@@ -1,13 +1,14 @@
 ####
 import os
 import numpy as np
-import pickle 
+# import pickle
 import scipy
 import random
 import array
 
 from sklearn.preprocessing import StandardScaler
-from sklearn.externals import joblib
+import joblib
+import sklearn.externals
 
 import librosa
 from pydub import AudioSegment
@@ -53,7 +54,7 @@ def append_zeros(in_features):
 	final = np.reshape(np.array(final_features),(len(final_features),-1))
 	scaler = StandardScaler()
 	final=scaler.fit_transform(final)
-	print final.shape
+	print (final.shape)
 	return final    
 
 
@@ -79,23 +80,23 @@ def load_audio_segments(file_path, file_name, sil_start_time, sil_end_time):
 def classify_intervals(file_path, file_name, sil_start_time, sil_end_time):
 	#load_classifier
 	svc=joblib.load(os.path.join('./models/',utils.sl_clsf_model_name))
-	print "Model loaded.."
+	print ("Model loaded..")
 
 	audio_segs,sr=load_audio_segments(file_path, file_name, sil_start_time, sil_end_time)
 
-	print "Segments loaded.."
+	print ("Segments loaded..")
 	all_features=[]
 
 	for seg in audio_segs:
 		all_features.append(extract_feature(seg,sr))
 
-	print "Features loaded.."
+	print ("Features loaded..")
 
 	all_features=append_zeros(all_features)
 
-	print "Appended zeros.."
+	print ("Appended zeros..")
 	y_pred = list(svc.predict(all_features))
-	print y_pred
+	print (y_pred)
 
 	new_sil_start_time=[]
 	new_sil_end_time=[]
@@ -108,8 +109,8 @@ def classify_intervals(file_path, file_name, sil_start_time, sil_end_time):
 			new_sil_start_time.append(sil_start_time[idx])
 			new_sil_end_time.append(sil_end_time[idx])
 
-	print new_sil_start_time
-	print new_sil_end_time
+	print (new_sil_start_time)
+	print (new_sil_end_time)
 
 	return new_sil_start_time,new_sil_end_time
 
@@ -119,7 +120,7 @@ def vocal_separation(file_path,file_name):
 	Code is borrowed from Librosa examples
 	'''
 	y, sr = librosa.load(os.path.join(file_path,file_name))
-	print "file loaded for vocal"
+	print ("file loaded for vocal")
 	# And compute the spectrogram magnitude and phase
 	S_full, phase = librosa.magphase(librosa.stft(y))
 
@@ -269,7 +270,7 @@ def reduce_silences(file_path,file_name):
 	del_start_sample_id.sort()
 	del_end_sample_id.sort()
 
-	print X.shape
+	print (X.shape)
 	new_X=np.zeros((1,))
 	curr_start=0
 	curr_end=0
