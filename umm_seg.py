@@ -127,13 +127,14 @@ def call_umm_segmentation(features,pad,contiguous,random_wins):
 
     step_counter = tf.compat.v1.train.get_or_create_global_step()
 
+    checkpoint = tf.train.Checkpoint(model=model, step_counter=step_counter)
 
-    # checkpoint = tfe.Checkpoint(
-    #     model=model, step_counter=step_counter)
+    # if tf.compat.v1.train.checkpoint_exists(checkpoint_prefix):
 
-    # if tf.train.checkpoint_exists(checkpoint_prefix):
-    #     checkpoint.restore(checkpoint_prefix)
-
+    # NOTE: tfのバージョンダウンが必要 https://github.com/hourglasshoro/research/issues/1#issuecomment-768367400
+    status = checkpoint.restore(checkpoint_prefix)
+    status.assert_consumed()
+    # model.load_weights(checkpoint_prefix).expect_partial()
 
     norm_feats=normalization(tf.convert_to_tensor(features))
     logit = model(norm_feats, training=False)
@@ -200,9 +201,9 @@ def silence_intervals(file_path,file_name):
 
 
     dur=librosa.get_duration(y=audio, sr=sample_rate)
-    print (nsil_intv)
-    print (dur)
-    print (sample_rate)
+    # print (nsil_intv)
+    # print (dur)
+    # print (sample_rate)
     curr_sil_start=0.0
     curr_sil_end=0.0
     for i in range(nsil_intv.shape[0]):
@@ -218,6 +219,6 @@ def silence_intervals(file_path,file_name):
         sil_end_time.append(str(curr_sil_end))
         curr_sil_start=nsil_end_time[i]
 
-    print (sil_start_time)
-    print (sil_end_time)
+    # print (sil_start_time)
+    # print (sil_end_time)
     return sil_start_time,sil_end_time

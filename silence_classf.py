@@ -54,7 +54,7 @@ def append_zeros(in_features):
 	final = np.reshape(np.array(final_features),(len(final_features),-1))
 	scaler = StandardScaler()
 	final=scaler.fit_transform(final)
-	print (final.shape)
+	# print (final.shape)
 	return final    
 
 
@@ -96,7 +96,7 @@ def classify_intervals(file_path, file_name, sil_start_time, sil_end_time):
 
 	print ("Appended zeros..")
 	y_pred = list(svc.predict(all_features))
-	print (y_pred)
+	# print (y_pred)
 
 	new_sil_start_time=[]
 	new_sil_end_time=[]
@@ -109,8 +109,8 @@ def classify_intervals(file_path, file_name, sil_start_time, sil_end_time):
 			new_sil_start_time.append(sil_start_time[idx])
 			new_sil_end_time.append(sil_end_time[idx])
 
-	print (new_sil_start_time)
-	print (new_sil_end_time)
+	# print (new_sil_start_time)
+	# print (new_sil_end_time)
 
 	return new_sil_start_time,new_sil_end_time
 
@@ -270,7 +270,7 @@ def reduce_silences(file_path,file_name):
 	del_start_sample_id.sort()
 	del_end_sample_id.sort()
 
-	print (X.shape)
+	# print (X.shape)
 	new_X=np.zeros((1,))
 	curr_start=0
 	curr_end=0

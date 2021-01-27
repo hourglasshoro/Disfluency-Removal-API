@@ -86,6 +86,7 @@ class get_sample_file:
 			else:
 				# return list of start and end times
 				for segment in time_segments:
+					# print(segment)
 					start_time.append(segment[0]/1000.0)
 					end_time.append(segment[1]/1000.0)
 
@@ -124,8 +125,8 @@ class get_sample_file:
 			
 			return json.dumps({'msg':"Your file is uploaded!",
 			'start_time':start_time,'end_time':end_time, 
-			'sil_start_time':sil_start_time, 
-			'sil_end_time':sil_end_time,
+			# 'sil_start_time':sil_start_time,
+			# 'sil_end_time':sil_end_time,
 			# 'disf_sil_start_time':disf_sil_start_time,
 			# 'disf_sil_end_time':disf_sil_end_time,
 			})
